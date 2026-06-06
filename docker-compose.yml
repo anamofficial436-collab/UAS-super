@@ -22,5 +22,8 @@ services:
     environment:
       MYSQL_ROOT_PASSWORD: supersecretrootpassword
       MYSQL_DATABASE: uas_db
+      # Tambahkan 2 baris di bawah ini agar user aplikasi otomatis terbuat:
+      MYSQL_USER: uas_user
+      MYSQL_PASSWORD: uas_password_secure
     ports:
       - "3306:3306"
