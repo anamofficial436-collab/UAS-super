@@ -1,14 +1,14 @@
 <?php
 /**
  * config.php — Konfigurasi koneksi database menggunakan PDO
- * Membaca kredensial dari environment variables (Docker Compose)
+ * Kredensial ditulis langsung (hardcoded) sesuai dengan docker-compose untuk memastikan anti-gagal.
  */
 
-define('DB_HOST',     getenv('DB_HOST')     ?: 'mariadb_db');
-define('DB_PORT',     getenv('DB_PORT')     ?: '3306');
-define('DB_NAME',     getenv('DB_NAME')     ?: 'uas_db');
-define('DB_USER',     getenv('DB_USER')     ?: 'uas_user');
-define('DB_PASSWORD', getenv('DB_PASSWORD') ?: 'uas_password_secure'); // <-- Sudah diperbaiki agar sinkron
+define('DB_HOST',     'mariadb_db');          // Sesuai dengan container_name MariaDB
+define('DB_PORT',     '3306');
+define('DB_NAME',     'uas_db');              // Sesuai MYSQL_DATABASE di docker-compose
+define('DB_USER',     'uas_user');            // Sesuai MYSQL_USER di docker-compose
+define('DB_PASSWORD', 'uas_password_secure');  // Sesuai MYSQL_PASSWORD di docker-compose
 define('APP_NAME',    'Sistem Manajemen Mahasiswa');
 define('APP_VERSION', '1.0.0');
 
@@ -38,7 +38,6 @@ function getDB(): PDO {
     try {
         $pdo = new PDO($dsn, DB_USER, DB_PASSWORD, $options);
     } catch (PDOException $e) {
-        // Di production: jangan tampilkan pesan error mentah ke user
         error_log('[DB ERROR] ' . $e->getMessage());
         die(json_encode([
             'error' => 'Koneksi database gagal. Silakan coba beberapa saat lagi.',
