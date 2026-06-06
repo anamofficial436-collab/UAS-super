@@ -20,7 +20,7 @@ services:
     container_name: mariadb_db
     restart: always
     environment:
-      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_ROOT_PASSWORD: supersecretrootpassword
       MYSQL_DATABASE: uas_db
     ports:
       - "3306:3306"
