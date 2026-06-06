@@ -143,7 +143,13 @@ jobs:
             mkdir -p "$APP_DIR"
             cd "$APP_DIR"
 
-            # 2. Sinkronisasi kode terbaru
+            # 1b. ANTI-STUCK: Bersihkan sisa docker compose lama jika ada file macet
+            if [ -f "docker-compose.yml" ]; then
+              echo "[INFO] Cleaning old compose deployment..."
+              docker compose down --remove-orphans 2>/dev/null || true
+            fi
+
+            # 2. Sinkronisasi kode terbaru (Paksa Hard Reset)
             if [ ! -d ".git" ]; then
               echo "[INFO] Fresh clone..."
               git clone https://github.com/${{ github.repository }} .
@@ -151,10 +157,11 @@ jobs:
               echo "[INFO] Pulling latest changes..."
               git fetch --all
               git reset --hard origin/main
+              git clean -fdx
               git pull origin main
             fi
 
-            # 3. Setup file environment
+            # 3. Setup file environment awal
             if [ ! -f ".env" ]; then
               echo "[INFO] Creating .env from .env.example..."
               cp .env.example .env
@@ -163,22 +170,22 @@ jobs:
             # 4. Login ke Docker Hub di sisi Server
             echo "${{ secrets.DOCKERHUB_TOKEN }}" | docker login -u "${{ secrets.DOCKERHUB_USERNAME }}" --password-stdin
 
-            # 4b. Export variabel environment untuk docker-compose di SSH session ini
+            # 5. PENTING: Paksa hapus placeholder username lama di .env, ganti dengan secret asli
+            echo "[INFO] Injecting GitHub secrets into local .env file..."
+            sed -i '/DOCKERHUB_USERNAME/d' .env || true
+            echo "DOCKERHUB_USERNAME=${{ secrets.DOCKERHUB_USERNAME }}" >> .env
+            
+            sed -i '/DB_HOST/d' .env || true
+            echo "DB_HOST=mariadb_db" >> .env
+
+            # Export variabel ke session SSH aktif
             export DOCKERHUB_USERNAME="${{ secrets.DOCKERHUB_USERNAME }}"
 
-            # 5. Pull image terbaru menggunakan variabel dinamis
-            echo "[INFO] Pulling latest Docker images..."
-            docker pull ${DOCKERHUB_USERNAME}/uas-web-statis:latest || true
-            docker pull ${DOCKERHUB_USERNAME}/uas-web-dinamis:latest || true
-
-            # 6. ANTI-CONFLICT: Paksa hapus kontainer lama
+            # 6. ANTI-CONFLICT: Paksa hapus kontainer lama yang tersisa
             echo "[INFO] Removing old containers (anti-conflict)..."
             docker rm -f app_web_statis 2>/dev/null || true
             docker rm -f app_web_dinamis 2>/dev/null || true
             docker rm -f mariadb_db 2>/dev/null || true
-
-            # Turunkan semua stack lama
-            docker compose down --remove-orphans 2>/dev/null || true
 
             # 7. Jalankan stack baru
             echo "[INFO] Starting new stack..."
