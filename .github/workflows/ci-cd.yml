@@ -111,7 +111,6 @@ jobs:
     name: 🚀 Deploy to AWS EC2
     runs-on: ubuntu-latest
     needs: [changes, build_web_statis, build_web_dinamis]
-    # Memastikan deploy hanya jalan di branch main dan jika proses build tidak ada yang gagal (sukses atau skip)
     if: |
       github.ref == 'refs/heads/main' &&
       (needs.build_web_statis.result == 'success' || needs.build_web_statis.result == 'skipped') &&
@@ -164,12 +163,15 @@ jobs:
             # 4. Login ke Docker Hub di sisi Server
             echo "${{ secrets.DOCKERHUB_TOKEN }}" | docker login -u "${{ secrets.DOCKERHUB_USERNAME }}" --password-stdin
 
-            # 5. Pull image terbaru
-            echo "[INFO] Pulling latest Docker images..."
-            docker pull ${{ secrets.DOCKERHUB_USERNAME }}/uas-web-statis:latest || true
-            docker pull ${{ secrets.DOCKERHUB_USERNAME }}/uas-web-dinamis:latest || true
+            # 4b. Export variabel environment untuk docker-compose di SSH session ini
+            export DOCKERHUB_USERNAME="${{ secrets.DOCKERHUB_USERNAME }}"
 
-            # 6. ANTI-CONFLICT: Paksa hapus kontainer lama (tanpa paksa sudo jika tidak perlu)
+            # 5. Pull image terbaru menggunakan variabel dinamis
+            echo "[INFO] Pulling latest Docker images..."
+            docker pull ${DOCKERHUB_USERNAME}/uas-web-statis:latest || true
+            docker pull ${DOCKERHUB_USERNAME}/uas-web-dinamis:latest || true
+
+            # 6. ANTI-CONFLICT: Paksa hapus kontainer lama
             echo "[INFO] Removing old containers (anti-conflict)..."
             docker rm -f app_web_statis 2>/dev/null || true
             docker rm -f app_web_dinamis 2>/dev/null || true
@@ -210,4 +212,3 @@ jobs:
             echo "════════════════════════════════════════"
             echo "  ✅ Zero-Touch Deployment Complete"
             echo "════════════════════════════════════════"
-          
