@@ -8,7 +8,7 @@ define('DB_HOST',     getenv('DB_HOST')     ?: 'mariadb_db');
 define('DB_PORT',     getenv('DB_PORT')     ?: '3306');
 define('DB_NAME',     getenv('DB_NAME')     ?: 'uas_db');
 define('DB_USER',     getenv('DB_USER')     ?: 'uas_user');
-define('DB_PASSWORD', getenv('DB_PASSWORD') ?: '');
+define('DB_PASSWORD', getenv('DB_PASSWORD') ?: 'uas_password_secure'); // <-- Sudah diperbaiki agar sinkron
 define('APP_NAME',    'Sistem Manajemen Mahasiswa');
 define('APP_VERSION', '1.0.0');
 

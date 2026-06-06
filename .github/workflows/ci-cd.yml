@@ -143,13 +143,13 @@ jobs:
             mkdir -p "$APP_DIR"
             cd "$APP_DIR"
 
-            # 1b. ANTI-STUCK & PURGE: Paksa turunkan stack dan hapus volume database lama yang tersangkut
+            # 1b. ANTI-STUCK & PURGE: Bersihkan volume lama agar user MariaDB dibuat ulang secara bersih
             if [ -f "docker-compose.yml" ]; then
               echo "[INFO] Purging old compose deployment and volumes..."
               docker compose down -v --remove-orphans 2>/dev/null || true
             fi
 
-            # 2. Sinkronisasi kode terbaru (Paksa Hard Reset)
+            # 2. Sinkronisasi kode terbaru
             if [ ! -d ".git" ]; then
               echo "[INFO] Fresh clone..."
               git clone https://github.com/${{ github.repository }} .
@@ -170,15 +170,16 @@ jobs:
             # 4. Login ke Docker Hub di sisi Server
             echo "${{ secrets.DOCKERHUB_TOKEN }}" | docker login -u "${{ secrets.DOCKERHUB_USERNAME }}" --password-stdin
 
-            # 5. PENTING: Paksa hapus placeholder username lama di .env, ganti dengan secret asli
-            echo "[INFO] Injecting GitHub secrets into local .env file..."
-            sed -i '/DOCKERHUB_USERNAME/d' .env || true
-            echo "DOCKERHUB_USERNAME=${{ secrets.DOCKERHUB_USERNAME }}" >> .env
-            
-            sed -i '/DB_HOST/d' .env || true
+            # 5. INJEKSI TOTAL: Paksa setel seluruh variabel .env secara akurat di server
+            echo "[INFO] Overwriting .env file with explicit production values..."
+            echo "DOCKERHUB_USERNAME=${{ secrets.DOCKERHUB_USERNAME }}" > .env
+            echo "DB_ROOT_PASSWORD=supersecretrootpassword" >> .env
             echo "DB_HOST=mariadb_db" >> .env
+            echo "DB_PORT=3306" >> .env
+            echo "DB_NAME=uas_db" >> .env
+            echo "DB_USER=uas_user" >> .env
+            echo "DB_PASSWORD=uas_password_secure" >> .env
 
-            # Export variabel ke session SSH aktif
             export DOCKERHUB_USERNAME="${{ secrets.DOCKERHUB_USERNAME }}"
 
             # 6. ANTI-CONFLICT: Bersihkan sisa kontainer lama secara paksa
@@ -219,4 +220,3 @@ jobs:
             echo "════════════════════════════════════════"
             echo "  ✅ Zero-Touch Deployment Complete"
             echo "════════════════════════════════════════"
-            
