@@ -143,10 +143,10 @@ jobs:
             mkdir -p "$APP_DIR"
             cd "$APP_DIR"
 
-            # 1b. ANTI-STUCK: Bersihkan sisa docker compose lama jika ada file macet
+            # 1b. ANTI-STUCK & PURGE: Paksa turunkan stack dan hapus volume database lama yang tersangkut
             if [ -f "docker-compose.yml" ]; then
-              echo "[INFO] Cleaning old compose deployment..."
-              docker compose down --remove-orphans 2>/dev/null || true
+              echo "[INFO] Purging old compose deployment and volumes..."
+              docker compose down -v --remove-orphans 2>/dev/null || true
             fi
 
             # 2. Sinkronisasi kode terbaru (Paksa Hard Reset)
@@ -181,19 +181,19 @@ jobs:
             # Export variabel ke session SSH aktif
             export DOCKERHUB_USERNAME="${{ secrets.DOCKERHUB_USERNAME }}"
 
-            # 6. ANTI-CONFLICT: Paksa hapus kontainer lama yang tersisa
+            # 6. ANTI-CONFLICT: Bersihkan sisa kontainer lama secara paksa
             echo "[INFO] Removing old containers (anti-conflict)..."
             docker rm -f app_web_statis 2>/dev/null || true
             docker rm -f app_web_dinamis 2>/dev/null || true
             docker rm -f mariadb_db 2>/dev/null || true
 
-            # 7. Jalankan stack baru
+            # 7. Jalankan stack baru secara bersih
             echo "[INFO] Starting new stack..."
             docker compose up -d --pull always --force-recreate
 
             # 8. Verifikasi deployment
             echo "[INFO] Waiting for containers to be healthy..."
-            sleep 10
+            sleep 15
 
             echo ""
             echo "════════════ Container Status ════════════"
@@ -219,3 +219,4 @@ jobs:
             echo "════════════════════════════════════════"
             echo "  ✅ Zero-Touch Deployment Complete"
             echo "════════════════════════════════════════"
+            
