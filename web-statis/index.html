@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Portfolio — UAS Server Administration</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;1,9..40,300&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg:       #0a0a0f;
+      --surface:  #12121a;
+      --border:   #1e1e2e;
+      --accent:   #6ee7b7;
+      --accent2:  #818cf8;
+      --text:     #e2e8f0;
+      --muted:    #64748b;
+      --radius:   12px;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 16px;
+      line-height: 1.7;
+      min-height: 100vh;
+    }
+
+    /* ── Grid noise texture overlay ── */
+    body::before {
+      content: '';
+      position: fixed; inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+      pointer-events: none; z-index: 0; opacity: .4;
+    }
+
+    .container { max-width: 900px; margin: 0 auto; padding: 0 24px; position: relative; z-index: 1; }
+
+    /* ── Navigation ── */
+    nav {
+      padding: 24px 0;
+      display: flex; justify-content: space-between; align-items: center;
+      border-bottom: 1px solid var(--border);
+    }
+    .nav-brand {
+      font-family: 'Syne', sans-serif; font-weight: 800; font-size: 1.1rem;
+      color: var(--accent); letter-spacing: -0.02em;
+    }
+    .nav-links { display: flex; gap: 28px; list-style: none; }
+    .nav-links a {
+      color: var(--muted); text-decoration: none; font-size: 0.9rem;
+      transition: color .2s; font-weight: 300;
+    }
+    .nav-links a:hover { color: var(--text); }
+
+    /* ── Hero ── */
+    .hero {
+      padding: 80px 0 60px;
+      display: grid; grid-template-columns: 1fr auto; gap: 40px; align-items: center;
+    }
+    .hero-badge {
+      display: inline-flex; align-items: center; gap: 8px;
+      background: rgba(110,231,183,.08); border: 1px solid rgba(110,231,183,.2);
+      color: var(--accent); padding: 6px 14px; border-radius: 100px;
+      font-size: 0.78rem; font-weight: 400; margin-bottom: 24px;
+      letter-spacing: 0.08em; text-transform: uppercase;
+    }
+    .hero-badge::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: var(--accent); animation: pulse 2s infinite; }
+    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.3} }
+
+    h1 {
+      font-family: 'Syne', sans-serif; font-weight: 800;
+      font-size: clamp(2.4rem, 6vw, 3.8rem);
+      line-height: 1.05; letter-spacing: -0.04em;
+      color: var(--text);
+    }
+    h1 .highlight {
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .hero-sub {
+      margin-top: 20px; color: var(--muted); font-size: 1.05rem;
+      max-width: 520px; font-weight: 300;
+    }
+    .hero-actions { display: flex; gap: 12px; margin-top: 32px; flex-wrap: wrap; }
+    .btn {
+      padding: 12px 24px; border-radius: var(--radius); font-size: 0.9rem;
+      font-weight: 400; cursor: pointer; transition: all .2s; text-decoration: none;
+      display: inline-flex; align-items: center; gap: 8px; font-family: 'DM Sans', sans-serif;
+    }
+    .btn-primary {
+      background: var(--accent); color: #0a0a0f; border: none;
+      font-weight: 700;
+    }
+    .btn-primary:hover { background: #a7f3d0; transform: translateY(-1px); }
+    .btn-secondary {
+      background: transparent; color: var(--text);
+      border: 1px solid var(--border);
+    }
+    .btn-secondary:hover { border-color: var(--muted); transform: translateY(-1px); }
+
+    .hero-avatar {
+      width: 140px; height: 140px; border-radius: 24px;
+      background: linear-gradient(135deg, var(--accent2), var(--accent));
+      display: flex; align-items: center; justify-content: center;
+      font-size: 3rem; flex-shrink: 0;
+      box-shadow: 0 0 60px rgba(110,231,183,.15);
+    }
+
+    /* ── Section ── */
+    section { padding: 60px 0; border-top: 1px solid var(--border); }
+    .section-label {
+      font-size: 0.75rem; letter-spacing: 0.12em; text-transform: uppercase;
+      color: var(--accent); font-weight: 400; margin-bottom: 12px;
+    }
+    h2 {
+      font-family: 'Syne', sans-serif; font-weight: 700; font-size: 1.8rem;
+      letter-spacing: -0.03em; margin-bottom: 32px;
+    }
+
+    /* ── Skills Grid ── */
+    .skills-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 16px; }
+    .skill-card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 20px 22px;
+      transition: border-color .2s, transform .2s;
+    }
+    .skill-card:hover { border-color: var(--accent); transform: translateY(-2px); }
+    .skill-icon { font-size: 1.5rem; margin-bottom: 10px; }
+    .skill-name { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 0.95rem; margin-bottom: 4px; }
+    .skill-desc { font-size: 0.82rem; color: var(--muted); font-weight: 300; }
+
+    /* ── Projects ── */
+    .projects-grid { display: grid; gap: 16px; }
+    .project-card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 28px;
+      display: grid; grid-template-columns: 1fr auto; gap: 16px; align-items: start;
+      transition: border-color .2s;
+    }
+    .project-card:hover { border-color: var(--accent2); }
+    .project-name { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 1.1rem; margin-bottom: 8px; }
+    .project-desc { font-size: 0.9rem; color: var(--muted); font-weight: 300; }
+    .tags { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 14px; }
+    .tag {
+      background: rgba(129,140,248,.1); border: 1px solid rgba(129,140,248,.2);
+      color: var(--accent2); padding: 3px 10px; border-radius: 100px;
+      font-size: 0.75rem; font-weight: 400;
+    }
+    .project-arrow { color: var(--muted); font-size: 1.2rem; }
+
+    /* ── Contact ── */
+    .contact-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 12px; }
+    .contact-item {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 20px;
+      text-decoration: none; color: var(--text);
+      transition: all .2s; display: flex; align-items: center; gap: 12px;
+    }
+    .contact-item:hover { border-color: var(--accent); color: var(--accent); transform: translateY(-2px); }
+    .contact-icon { font-size: 1.3rem; }
+    .contact-label { font-size: 0.85rem; font-weight: 400; }
+
+    /* ── Footer ── */
+    footer {
+      padding: 32px 0; border-top: 1px solid var(--border);
+      display: flex; justify-content: space-between; align-items: center;
+      color: var(--muted); font-size: 0.82rem; font-weight: 300;
+    }
+    .footer-tech { display: flex; gap: 6px; align-items: center; }
+    .dot { width: 4px; height: 4px; border-radius: 50%; background: var(--muted); }
+
+    /* ── Responsive ── */
+    @media (max-width: 640px) {
+      .hero { grid-template-columns: 1fr; }
+      .hero-avatar { display: none; }
+      nav { flex-direction: column; gap: 16px; align-items: flex-start; }
+      footer { flex-direction: column; gap: 8px; text-align: center; }
+    }
+
+    /* ── Fade-in animation ── */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .hero, section { animation: fadeUp .6s ease both; }
+    section:nth-of-type(2) { animation-delay: .1s; }
+    section:nth-of-type(3) { animation-delay: .2s; }
+    section:nth-of-type(4) { animation-delay: .3s; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- Navigation -->
+    <nav>
+      <div class="nav-brand">MAHASISWA.DEV</div>
+      <ul class="nav-links">
+        <li><a href="#about">Tentang</a></li>
+        <li><a href="#skills">Keahlian</a></li>
+        <li><a href="#projects">Proyek</a></li>
+        <li><a href="#contact">Kontak</a></li>
+      </ul>
+    </nav>
+
+    <!-- Hero -->
+    <section class="hero" id="about">
+      <div>
+        <div class="hero-badge">✦ Tersedia untuk Kolaborasi</div>
+        <h1>Halo, Saya<br /><span class="highlight">Nama Mahasiswa</span></h1>
+        <p class="hero-sub">
+          Mahasiswa Informatika yang berfokus pada pengembangan web full-stack, 
+          administrasi server, dan otomasi CI/CD berbasis cloud.
+        </p>
+        <div class="hero-actions">
+          <a href="#projects" class="btn btn-primary">↓ Lihat Proyek</a>
+          <a href="#contact" class="btn btn-secondary">Hubungi Saya →</a>
+        </div>
+      </div>
+      <div class="hero-avatar">👨‍💻</div>
+    </section>
+
+    <!-- Skills -->
+    <section id="skills">
+      <div class="section-label">Keahlian Teknis</div>
+      <h2>Tech Stack</h2>
+      <div class="skills-grid">
+        <div class="skill-card"><div class="skill-icon">🐳</div><div class="skill-name">Docker</div><div class="skill-desc">Containerization & Compose</div></div>
+        <div class="skill-card"><div class="skill-icon">☁️</div><div class="skill-name">AWS EC2</div><div class="skill-desc">Cloud deployment & scaling</div></div>
+        <div class="skill-card"><div class="skill-icon">⚙️</div><div class="skill-name">GitHub Actions</div><div class="skill-desc">CI/CD pipeline automation</div></div>
+        <div class="skill-card"><div class="skill-icon">🌐</div><div class="skill-name">Nginx</div><div class="skill-desc">Web server & reverse proxy</div></div>
+        <div class="skill-card"><div class="skill-icon">🐘</div><div class="skill-name">PHP / MySQL</div><div class="skill-desc">Backend & database</div></div>
+        <div class="skill-card"><div class="skill-icon">🔒</div><div class="skill-name">Linux</div><div class="skill-desc">Ubuntu Server 22.04</div></div>
+      </div>
+    </section>
+
+    <!-- Projects -->
+    <section id="projects">
+      <div class="section-label">Portofolio</div>
+      <h2>Proyek Unggulan</h2>
+      <div class="projects-grid">
+        <div class="project-card">
+          <div>
+            <div class="project-name">UAS Server Administration</div>
+            <div class="project-desc">Sistem deployment otomatis menggunakan GitHub Actions, Docker Compose, dan AWS EC2 dengan arsitektur Zero-Touch CI/CD.</div>
+            <div class="tags">
+              <span class="tag">Docker</span>
+              <span class="tag">GitHub Actions</span>
+              <span class="tag">AWS EC2</span>
+              <span class="tag">Nginx</span>
+              <span class="tag">MariaDB</span>
+            </div>
+          </div>
+          <div class="project-arrow">↗</div>
+        </div>
+        <div class="project-card">
+          <div>
+            <div class="project-name">Sistem Manajemen Data PHP</div>
+            <div class="project-desc">Aplikasi CRUD berbasis PHP Native dengan PDO dan MariaDB yang ter-containerize menggunakan Docker.</div>
+            <div class="tags">
+              <span class="tag">PHP 8.2</span>
+              <span class="tag">MariaDB</span>
+              <span class="tag">PDO</span>
+              <span class="tag">Docker</span>
+            </div>
+          </div>
+          <div class="project-arrow">↗</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Contact -->
+    <section id="contact">
+      <div class="section-label">Get in Touch</div>
+      <h2>Kontak</h2>
+      <div class="contact-grid">
+        <a href="mailto:mahasiswa@email.com" class="contact-item">
+          <span class="contact-icon">✉️</span>
+          <span class="contact-label">mahasiswa@email.com</span>
+        </a>
+        <a href="https://github.com/username" class="contact-item" target="_blank">
+          <span class="contact-icon">🐙</span>
+          <span class="contact-label">github.com/username</span>
+        </a>
+        <a href="https://linkedin.com/in/username" class="contact-item" target="_blank">
+          <span class="contact-icon">💼</span>
+          <span class="contact-label">LinkedIn Profile</span>
+        </a>
+      </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+      <span>© 2025 Nama Mahasiswa — UAS Administrasi Server</span>
+      <div class="footer-tech">
+        <span>Served by Nginx</span>
+        <div class="dot"></div>
+        <span>Deployed on AWS EC2</span>
+        <div class="dot"></div>
+        <span>CI/CD via GitHub Actions</span>
+      </div>
+    </footer>
+  </div>
+</body>
+</html>

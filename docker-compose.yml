@@ -1,0 +1,91 @@
+name: uas-project
+
+services:
+  # ─────────────────────────────────────
+  # Service 1: Web Statis (Nginx)
+  # ─────────────────────────────────────
+  app_web_statis:
+    image: ${DOCKERHUB_USERNAME:-yourusername}/uas-web-statis:latest
+    container_name: app_web_statis
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    networks:
+      - uas_default
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:80"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+
+  # ─────────────────────────────────────
+  # Service 2: Web Dinamis (PHP 8.2 + Apache)
+  # ─────────────────────────────────────
+  app_web_dinamis:
+    image: ${DOCKERHUB_USERNAME:-yourusername}/uas-web-dinamis:latest
+    container_name: app_web_dinamis
+    restart: unless-stopped
+    ports:
+      - "3000:80"  # Apache di dalam kontainer tetap port 80, di-expose ke 3000
+    environment:
+      DB_HOST:     ${DB_HOST}
+      DB_PORT:     ${DB_PORT:-3306}
+      DB_NAME:     ${DB_NAME}
+      DB_USER:     ${DB_USER}
+      DB_PASSWORD: ${DB_PASSWORD}
+    depends_on:
+      mariadb_db:
+        condition: service_healthy
+    networks:
+      - uas_default
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:80"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
+
+  # ─────────────────────────────────────
+  # Service 3: MariaDB (Database)
+  # ─────────────────────────────────────
+  mariadb_db:
+    image: mariadb:10.11
+    container_name: mariadb_db
+    restart: unless-stopped
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
+      MYSQL_DATABASE:      ${DB_NAME}
+      MYSQL_USER:          ${DB_USER}
+      MYSQL_PASSWORD:      ${DB_PASSWORD}
+    volumes:
+      # Volume persistent — data tidak hilang saat restart
+      - mariadb_data:/var/lib/mysql
+      # Auto-seed schema saat kontainer pertama kali dibuat
+      - ./web-dinamis/sql/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    networks:
+      - uas_default
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 20s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
+
+# ─────────────────────────────────────
+# Network
+# ─────────────────────────────────────
+networks:
+  uas_default:
+    driver: bridge
+    name: uas_default
+
+# ─────────────────────────────────────
+# Volumes
+# ─────────────────────────────────────
+volumes:
+  mariadb_data:
+    driver: local
+    name: uas_mariadb_data
