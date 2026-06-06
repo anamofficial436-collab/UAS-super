@@ -14,16 +14,25 @@ services:
     ports:
       - "3000:80"
     restart: always
+    # Tambahkan baris di bawah ini agar Apache PHP bisa membaca file .env server
+    env_file:
+      - .env
 
   mariadb:
     image: mariadb:10.11
     container_name: mariadb_db
     restart: always
+    env_file:
+      - .env
     environment:
       MYSQL_ROOT_PASSWORD: supersecretrootpassword
       MYSQL_DATABASE: uas_db
-      # Tambahkan 2 baris di bawah ini agar user aplikasi otomatis terbuat:
       MYSQL_USER: uas_user
       MYSQL_PASSWORD: uas_password_secure
+    volumes:
+      - mariadb_data:/var/lib/mysql
     ports:
       - "3306:3306"
+
+volumes:
+  mariadb_data:
